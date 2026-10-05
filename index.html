@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RuzgArda - Tekne Izleme Paneli</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent-blue: #38bdf8;
+      --accent-green: #4ade80;
+      --accent-yellow: #facc15;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #334155;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      color: var(--accent-blue);
+    }
+
+    .status-tag {
+      display: inline-block;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 12px;
+      background-color: #064e3b;
+      color: var(--accent-green);
+      margin-top: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
+      text-align: center;
+    }
+
+    .card .title {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .card .value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .card .unit {
+      font-size: 1rem;
+      color: var(--text-sub);
+      font-weight: 400;
+    }
+
+    .value.wind { color: var(--accent-blue); }
+    .value.battery { color: var(--accent-green); }
+    .value.temp { color: #f97316; }
+    .value.pressure { color: var(--accent-yellow); }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.8rem;
+      color: var(--text-sub);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>RuzgArda</h1>
+    <div class="status-tag" id="lastUpdate">Son Güncelleme: Yükleniyor...</div>
+  </div>
+
+  <div class="grid">
+    <!-- Rüzgâr -->
+    <div class="card">
+      <div class="title">Rüzgâr Hızı</div>
+      <div class="value wind" id="valWind">--</div>
+      <div class="unit">Knot</div>
+    </div>
+
+    <!-- Akü Voltajı -->
+    <div class="card">
+      <div class="title">Akü Voltajı</div>
+      <div class="value battery" id="valVolt">--</div>
+      <div class="unit">Volt (DC)</div>
+    </div>
+
+    <!-- Sıcaklık -->
+    <div class="card">
+      <div class="title">Sıcaklık</div>
+      <div class="value temp" id="valTemp">--</div>
+      <div class="unit">°C</div>
+    </div>
+
+    <!-- Basınç -->
+    <div class="card">
+      <div class="title">Barometre</div>
+      <div class="value pressure" id="valPress">--</div>
+      <div class="unit">hPa</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    RuzgArda Marine Dashboard &copy; 2026
+  </div>
+
+  <script>
+    // ThingSpeak Channel ID (RuzgArda Tekne)
+    const CHANNEL_ID = '3521886'; 
+    const URL = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds/last.json`;
+
+    async function fetchMarineData() {
+      try {
+        const response = await fetch(URL);
+        const data = await response.json();
+
+        document.getElementById('valWind').innerText = parseFloat(data.field1 || 0).toFixed(1);
+        document.getElementById('valVolt').innerText = parseFloat(data.field2 || 0).toFixed(2);
+        document.getElementById('valTemp').innerText = parseFloat(data.field3 || 0).toFixed(1);
+        document.getElementById('valPress').innerText = Math.round(parseFloat(data.field4 || 0));
+
+        const updateTime = new Date(data.created_at).toLocaleTimeString('tr-TR');
+        document.getElementById('lastUpdate').innerText = `Canlı Veri • Son Güncelleme: ${updateTime}`;
+      } catch (err) {
+        document.getElementById('lastUpdate').innerText = 'Veri Bağlantı Hatası!';
+      }
+    }
+
+    // İlk açılışta ve her 15 saniyede bir verileri güncelle
+    fetchMarineData();
+    setInterval(fetchMarineData, 15000);
+  </script>
+</body>
+</html>
