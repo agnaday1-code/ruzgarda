@@ -115,6 +115,12 @@
     .data-value { font-size: 1.1rem; font-weight: 700; color: var(--text); }
     .unit { font-size: 0.7rem; color: var(--accent); margin-left: 2px; }
 
+    /* Renkli Değer Sınıfları (Orijinal Kodundaki Gibi) */
+    .val-wind { color: var(--accent); }
+    .val-volt { color: #4ade80; }
+    .val-temp { color: #f97316; }
+    .val-press { color: #facc15; }
+
     /* Orta Pusula Paneli */
     .compass-panel { 
       grid-column: 2; 
@@ -156,11 +162,11 @@
     .dir-e { right: 15px; top: 50%; transform: translateY(-50%); }
     .dir-w { left: 15px; top: 50%; transform: translateY(-50%); }
 
-    /* Cihazdakiyle Birebir Aynı SVG Vektör Tekne İkonu */
+    /* Vektör Tekne İkonu */
     .boat-icon-container {
       position: absolute;
-      width: 60px;
-      height: 100px;
+      width: 50px;
+      height: 90px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -169,7 +175,7 @@
     .boat-svg {
       width: 100%;
       height: 100%;
-      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+      filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
     }
 
     /* Rota Göstergesi */
@@ -198,7 +204,7 @@
 
   <div class="container">
     <header>
-      <h1>RuzgArda Deniz Havası</h1>
+      <h1>RuzgArda</h1>
       <div class="status-badge" id="status">Veri Yükleniyor...</div>
     </header>
 
@@ -206,34 +212,30 @@
       <!-- Sol Sütun: Veriler -->
       <div class="column">
         <div class="panel">
-          <div class="panel-title">Rüzgar Durumu</div>
+          <div class="panel-title">Rüzgâr Hızı</div>
           <div class="data-row">
             <span class="data-label">ANLIK</span>
-            <div><span class="data-value" id="windVal">0.0</span><span class="unit">KT</span></div>
-          </div>
-          <div class="data-row">
-            <span class="data-label">5S ORTALAMA</span>
-            <div><span class="data-value" id="windAvgVal">0.0</span><span class="unit">KT</span></div>
+            <div><span class="data-value val-wind" id="windVal">0.0</span><span class="unit">KT</span></div>
           </div>
         </div>
 
         <div class="panel">
-          <div class="panel-title">Güç Sistemi</div>
+          <div class="panel-title">Akü Voltajı</div>
           <div class="data-row">
-            <span class="data-label">AKÜ VOLTAJI</span>
-            <div><span class="data-value" id="voltVal">0.00</span><span class="unit">V</span></div>
+            <span class="data-label">DC VOLT</span>
+            <div><span class="data-value val-volt" id="voltVal">0.00</span><span class="unit">V</span></div>
           </div>
         </div>
 
         <div class="panel">
-          <div class="panel-title">Atmosferik Veriler</div>
+          <div class="panel-title">Atmosferik</div>
           <div class="data-row">
             <span class="data-label">SICAKLIK</span>
-            <div><span class="data-value" id="tempVal">0.0</span><span class="unit">°C</span></div>
+            <div><span class="data-value val-temp" id="tempVal">0.0</span><span class="unit">°C</span></div>
           </div>
           <div class="data-row">
-            <span class="data-label">BASINÇ</span>
-            <div><span class="data-value" id="pressVal">0</span><span class="unit">hPa</span></div>
+            <span class="data-label">BAROMETRE</span>
+            <div><span class="data-value val-press" id="pressVal">0</span><span class="unit">hPa</span></div>
           </div>
         </div>
       </div>
@@ -247,7 +249,6 @@
           <div class="direction-label dir-s">S</div>
           <div class="direction-label dir-w">W</div>
           
-          <!-- Detaylı SVG Tekne Grafik Vektörü -->
           <div class="boat-icon-container" id="boatContainer">
             <svg class="boat-svg" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
               <path d="M30 2 C45 15, 52 40, 48 80 C46 95, 34 98, 30 98 C26 98, 14 95, 12 80 C8 40, 15 15, 30 2 Z" fill="url(#boatGrad)" stroke="#38bdf8" stroke-width="2"/>
@@ -277,9 +278,9 @@
         </div>
 
         <div class="panel">
-          <div class="panel-title">Cihaz & Ağ Durumu</div>
+          <div class="panel-title">Sistem Durumu</div>
           <div class="data-row">
-            <span class="data-label">BULUT</span>
+            <span class="data-label">BULUT API</span>
             <span class="data-value" style="font-size: 0.85rem; color: #4ade80;">THINGSPEAK</span>
           </div>
           <div class="data-row">
@@ -310,18 +311,18 @@
         .then(response => response.json())
         .then(data => {
           if (data && data.created_at) {
+            // Orijinal kodundaki ThingSpeak Field eşleştirmeleri
             const windSpeed = data.field1 ? parseFloat(data.field1).toFixed(1) : '0.0';
             const volt = data.field2 ? parseFloat(data.field2).toFixed(2) : '0.00';
             const temp = data.field3 ? parseFloat(data.field3).toFixed(1) : '0.0';
             const press = data.field4 ? Math.round(parseFloat(data.field4)) : '0';
             
             document.getElementById('windVal').innerText = windSpeed;
-            document.getElementById('windAvgVal').innerText = windSpeed;
             document.getElementById('voltVal').innerText = volt;
             document.getElementById('tempVal').innerText = temp;
             document.getElementById('pressVal').innerText = press;
 
-            // Rota (Heading) verisi field5'ten alınıp SVG teknenin dönmesi sağlanıyor
+            // Rota (Heading) verisi field5'ten alınıyor (yoksa varsayılan 0)
             if (data.field5) {
               const heading = parseFloat(data.field5);
               document.getElementById('headingVal').innerText = heading.toFixed(0) + '°';
@@ -338,3 +339,14 @@
             document.getElementById('status').innerText = 'Henüz Veri Yok';
           }
         })
+        .catch(error => {
+          console.error('Veri çekme hatası:', error);
+          document.getElementById('status').innerText = 'Bağlantı Hatası';
+        });
+    }
+
+    verileriCek();
+    setInterval(verileriCek, 15000);
+  </script>
+</body>
+</html>
