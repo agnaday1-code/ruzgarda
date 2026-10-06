@@ -2,143 +2,286 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RuzgArda - Tekne İzleme Paneli</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RuzgArda - Glass Cockpit</title>
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --accent-blue: #38bdf8;
-      --accent-green: #4ade80;
-      --accent-yellow: #facc15;
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
+      --bg: #060b11;
+      --card-bg: rgba(15, 23, 36, 0.95);
+      --border: rgba(56, 189, 248, 0.25);
+      --accent: #38bdf8;
+      --gold: #d4af37;
+      --text: #f8fafc;
+      --subtext: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    
+    html, body { 
+      width: 100%; 
+      height: 100dvh; 
+      overflow: hidden !important; 
+      background-color: var(--bg); 
+      color: var(--text); 
+      padding: 10px; 
+      background-image: radial-gradient(circle at 50% 0%, #0f2138 0%, #060b11 80%); 
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      margin: 0;
-      padding: 20px;
+    .container { 
+      display: flex; 
+      flex-direction: column; 
+      height: 100%; 
+      max-width: 1400px; 
+      margin: 0 auto; 
     }
 
-    .header {
-      text-align: center;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #334155;
-      margin-bottom: 30px;
+    header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 5px 15px; 
+      border-bottom: 1px solid var(--border); 
+      margin-bottom: 10px; 
+      flex-shrink: 0; 
     }
 
-    .header h1 {
-      margin: 0;
-      font-size: 2rem;
-      letter-spacing: 2px;
-      color: var(--accent-blue);
+    h1 { font-size: 1.2rem; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+
+    .status-badge { 
+      background: rgba(34, 197, 94, 0.15); 
+      color: #4ade80; 
+      border: 1px solid rgba(34, 197, 94, 0.4); 
+      padding: 3px 10px; 
+      border-radius: 20px; 
+      font-size: 0.75rem; 
+      font-weight: 600; 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+    }
+    .status-badge::before { 
+      content: ''; 
+      width: 6px; 
+      height: 6px; 
+      background-color: #4ade80; 
+      border-radius: 50%; 
+      display: inline-block; 
+      box-shadow: 0 0 8px #4ade80; 
     }
 
-    .status-tag {
-      display: inline-block;
-      font-size: 0.85rem;
-      background-color: rgba(74, 222, 128, 0.1);
-      color: var(--accent-green);
-      padding: 4px 12px;
-      border-radius: 20px;
-      margin-top: 10px;
-      border: 1px solid rgba(74, 222, 128, 0.2);
+    .main-grid { 
+      display: grid; 
+      grid-template-columns: 320px 1fr 320px; 
+      gap: 15px; 
+      flex-grow: 1; 
+      min-height: 0; 
     }
 
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
+    .column { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px; 
+      min-height: 0; 
     }
 
-    .card {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      padding: 24px;
-      text-align: center;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-      border: 1px solid #334155;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .panel { 
+      background: var(--card-bg); 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      padding: 12px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
     }
 
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    .panel-title { 
+      font-size: 0.65rem; 
+      text-transform: uppercase; 
+      letter-spacing: 1.5px; 
+      color: var(--subtext); 
+      margin-bottom: 8px; 
+      border-bottom: 1px solid rgba(255,255,255,0.05); 
+      padding-bottom: 4px; 
     }
 
-    .card-title {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text-sub);
-      margin-bottom: 15px;
+    .data-row { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 4px 0; 
     }
 
-    .card-value {
-      font-size: 2.8rem;
-      font-weight: 700;
-      line-height: 1;
-      margin-bottom: 8px;
+    .data-label { font-size: 0.8rem; color: var(--subtext); }
+    .data-value { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .unit { font-size: 0.7rem; color: var(--accent); margin-left: 2px; }
+
+    /* Orta Pusula Paneli */
+    .compass-panel { 
+      grid-column: 2; 
+      background: var(--card-bg); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      position: relative; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      overflow: hidden; 
     }
 
-    .card-unit {
-      font-size: 0.9rem;
-      color: var(--text-sub);
+    .compass-container { 
+      position: relative; 
+      width: 280px; 
+      height: 280px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
     }
 
-    .val-wind { color: var(--accent-blue); }
-    .val-volt { color: var(--accent-green); }
-    .val-temp { color: #f97316; }
-    .val-press { color: var(--accent-yellow); }
+    .compass-ring { 
+      position: absolute; 
+      width: 100%; 
+      height: 100%; 
+      border: 2px dashed rgba(56, 189, 248, 0.4); 
+      border-radius: 50%; 
+    }
 
-    .footer {
-      text-align: center;
-      margin-top: 40px;
-      font-size: 0.8rem;
-      color: var(--text-sub);
+    .direction-label { 
+      position: absolute; 
+      font-weight: bold; 
+      font-size: 0.9rem; 
+      color: var(--accent); 
+    }
+    .dir-n { top: 10px; left: 50%; transform: translateX(-50%); color: #f43f5e; }
+    .dir-s { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .dir-e { right: 15px; top: 50%; transform: translateY(-50%); }
+    .dir-w { left: 15px; top: 50%; transform: translateY(-50%); }
+
+    /* Tekne İkonu (Rotaya göre dönebilir) */
+    .boat-icon { 
+      width: 45px; 
+      height: 85px; 
+      background: linear-gradient(135deg, #1e3a8a, #0284c7); 
+      border: 2px solid var(--accent); 
+      border-radius: 20px 20px 10px 10px; 
+      position: relative; 
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      transition: transform 0.5s ease;
+    }
+    .boat-icon::after { 
+      content: ''; 
+      width: 15px; 
+      height: 35px; 
+      border: 1px solid rgba(255,255,255,0.4); 
+      border-radius: 10px; 
+    }
+
+    /* Rota Göstergesi */
+    .heading-display { 
+      position: absolute; 
+      bottom: 15px; 
+      background: rgba(6, 11, 17, 0.85); 
+      border: 1px solid var(--border); 
+      padding: 4px 15px; 
+      border-radius: 20px; 
+      text-align: center; 
+    }
+    .heading-val { font-size: 1.3rem; font-weight: 800; color: var(--gold); }
+    .heading-title { font-size: 0.55rem; color: var(--subtext); text-transform: uppercase; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      html, body { overflow-y: auto !important; height: auto !important; }
+      .container { height: auto; }
+      .main-grid { grid-template-columns: 1fr; display: flex; flex-direction: column; }
+      .compass-panel { height: 320px; }
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>RuzgArda</h1>
-    <div id="status" class="status-tag">Veri Yükleniyor...</div>
-  </div>
+  <div class="container">
+    <header>
+      <h1>RuzgArda Deniz Havası</h1>
+      <div class="status-badge" id="status">Veri Yükleniyor...</div>
+    </header>
 
-  <div class="dashboard-grid">
-    <div class="card">
-      <div class="card-title">Rüzgâr Hızı</div>
-      <div id="windVal" class="card-value val-wind">0.0</div>
-      <div class="card-unit">Knot</div>
+    <div class="main-grid">
+      <!-- Sol Sütun: Veriler -->
+      <div class="column">
+        <div class="panel">
+          <div class="panel-title">Rüzgar Durumu</div>
+          <div class="data-row">
+            <span class="data-label">ANLIK</span>
+            <div><span class="data-value" id="windVal">0.0</span><span class="unit">KT</span></div>
+          </div>
+          <div class="data-row">
+            <span class="data-label">5S ORTALAMA</span>
+            <div><span class="data-value" id="windAvgVal">0.0</span><span class="unit">KT</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Güç Sistemi</div>
+          <div class="data-row">
+            <span class="data-label">AKÜ VOLTAJI</span>
+            <div><span class="data-value" id="voltVal">0.00</span><span class="unit">V</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Atmosferik Veriler</div>
+          <div class="data-row">
+            <span class="data-label">SICAKLIK</span>
+            <div><span class="data-value" id="tempVal">0.0</span><span class="unit">°C</span></div>
+          </div>
+          <div class="data-row">
+            <span class="data-label">BASINÇ</span>
+            <div><span class="data-value" id="pressVal">0</span><span class="unit">hPa</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orta Sütun: Pusula ve Glass Cockpit -->
+      <div class="compass-panel">
+        <div class="compass-container">
+          <div class="compass-ring"></div>
+          <div class="direction-label dir-n">N</div>
+          <div class="direction-label dir-e">E</div>
+          <div class="direction-label dir-s">S</div>
+          <div class="direction-label dir-w">W</div>
+          
+          <div class="boat-icon" id="boatIcon"></div>
+        </div>
+        <div class="heading-display">
+          <div class="heading-val" id="headingVal">--°</div>
+          <div class="heading-title">ROTA</div>
+        </div>
+      </div>
+
+      <!-- Sağ Sütun: Zaman ve Sistem Durumu -->
+      <div class="column">
+        <div class="panel" style="text-align: center; padding: 20px;">
+          <div class="panel-title">Zaman & Tarih</div>
+          <div class="data-value" id="clock-time" style="font-size: 1.8rem; color: var(--accent); margin-bottom: 5px;">00:00:00</div>
+          <div id="clock-date" style="font-size: 0.85rem; color: var(--gold); font-weight: 600;">--</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Cihaz & Ağ Durumu</div>
+          <div class="data-row">
+            <span class="data-label">BULUT</span>
+            <span class="data-value" style="font-size: 0.85rem; color: #4ade80;">THINGSPEAK</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">KANAL ID</span>
+            <span class="data-value" style="font-size: 0.85rem;">3521886</span>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div class="card">
-      <div class="card-title">Akü Voltajı</div>
-      <div id="voltVal" class="card-value val-volt">0.00</div>
-      <div class="card-unit">Volt (DC)</div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Sıcaklık</div>
-      <div id="tempVal" class="card-value val-temp">0.0</div>
-      <div class="card-unit">°C</div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Barometre</div>
-      <div id="pressVal" class="card-value val-press">0</div>
-      <div class="card-unit">hPa</div>
-    </div>
-  </div>
-
-  <div class="footer">
-    RuzgArda Marine Dashboard &copy; 2026
   </div>
 
   <script>
@@ -146,15 +289,40 @@
     const readApiKey = '3X9QT5GTRJTRBYBW';
     const url = `https://api.thingspeak.com/channels/${channelId}/feeds/last.json?api_key=${readApiKey}`;
 
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock-time').innerText = now.toTimeString().split(' ')[0];
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('clock-date').innerText = now.toLocaleDateString('tr-TR', options).toUpperCase();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
     function verileriCek() {
       fetch(url)
         .then(response => response.json())
         .then(data => {
           if (data && data.created_at) {
-            document.getElementById('windVal').innerText = data.field1 ? parseFloat(data.field1).toFixed(1) : '0.0';
-            document.getElementById('voltVal').innerText = data.field2 ? parseFloat(data.field2).toFixed(2) : '0.00';
-            document.getElementById('tempVal').innerText = data.field3 ? parseFloat(data.field3).toFixed(1) : '0.0';
-            document.getElementById('pressVal').innerText = data.field4 ? Math.round(parseFloat(data.field4)) : '0';
+            // Field eşleştirmeleri (ThingSpeak Kanalı)
+            const windSpeed = data.field1 ? parseFloat(data.field1).toFixed(1) : '0.0';
+            const volt = data.field2 ? parseFloat(data.field2).toFixed(2) : '0.00';
+            const temp = data.field3 ? parseFloat(data.field3).toFixed(1) : '0.0';
+            const press = data.field4 ? Math.round(parseFloat(data.field4)) : '0';
+            
+            document.getElementById('windVal').innerText = windSpeed;
+            document.getElementById('windAvgVal').innerText = windSpeed; // Varsa ortalama field'ı ile değiştirilebilir
+            document.getElementById('voltVal').innerText = volt;
+            document.getElementById('tempVal').innerText = temp;
+            document.getElementById('pressVal').innerText = press;
+
+            // Eğer ThingSpeak üzerinde rota (heading) verisi field5'te tutuluyorsa:
+            if (data.field5) {
+              const heading = parseFloat(data.field5);
+              document.getElementById('headingVal').innerText = heading.toFixed(0) + '°';
+              document.getElementById('boatIcon').style.transform = `rotate(${heading}deg)`;
+            } else {
+              document.getElementById('headingVal').innerText = '245°'; // Varsayılan/Örnek
+            }
 
             const tarih = new Date(data.created_at);
             const saatStr = tarih.toLocaleTimeString('tr-TR');
