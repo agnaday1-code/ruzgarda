@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RuzgArda - Tekne Izleme Paneli</title>
+  <title>RuzgArda - Tekne İzleme Paneli</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -40,54 +40,61 @@
     .status-tag {
       display: inline-block;
       font-size: 0.85rem;
-      padding: 4px 12px;
-      border-radius: 12px;
-      background-color: #064e3b;
+      background-color: rgba(74, 222, 128, 0.1);
       color: var(--accent-green);
-      margin-top: 8px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-top: 10px;
+      border: 1px solid rgba(74, 222, 128, 0.2);
     }
 
-    .grid {
+    .dashboard-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 20px;
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
     .card {
       background-color: var(--card-bg);
-      border-radius: 16px;
+      border-radius: 12px;
       padding: 24px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-      border: 1px solid #334155;
       text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .card .title {
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-sub);
+      margin-bottom: 15px;
+    }
+
+    .card-value {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .card-unit {
       font-size: 0.9rem;
       color: var(--text-sub);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
     }
 
-    .card .value {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .card .unit {
-      font-size: 1rem;
-      color: var(--text-sub);
-      font-weight: 400;
-    }
-
-    .value.wind { color: var(--accent-blue); }
-    .value.battery { color: var(--accent-green); }
-    .value.temp { color: #f97316; }
-    .value.pressure { color: var(--accent-yellow); }
+    .val-wind { color: var(--accent-blue); }
+    .val-volt { color: var(--accent-green); }
+    .val-temp { color: #f97316; }
+    .val-press { color: var(--accent-yellow); }
 
     .footer {
       text-align: center;
@@ -101,36 +108,32 @@
 
   <div class="header">
     <h1>RuzgArda</h1>
-    <div class="status-tag" id="lastUpdate">Son Güncelleme: Yükleniyor...</div>
+    <div id="status" class="status-tag">Veri Yükleniyor...</div>
   </div>
 
-  <div class="grid">
-    <!-- Rüzgâr -->
+  <div class="dashboard-grid">
     <div class="card">
-      <div class="title">Rüzgâr Hızı</div>
-      <div class="value wind" id="valWind">--</div>
-      <div class="unit">Knot</div>
+      <div class="card-title">Rüzgâr Hızı</div>
+      <div id="windVal" class="card-value val-wind">0.0</div>
+      <div class="card-unit">Knot</div>
     </div>
 
-    <!-- Akü Voltajı -->
     <div class="card">
-      <div class="title">Akü Voltajı</div>
-      <div class="value battery" id="valVolt">--</div>
-      <div class="unit">Volt (DC)</div>
+      <div class="card-title">Akü Voltajı</div>
+      <div id="voltVal" class="card-value val-volt">0.00</div>
+      <div class="card-unit">Volt (DC)</div>
     </div>
 
-    <!-- Sıcaklık -->
     <div class="card">
-      <div class="title">Sıcaklık</div>
-      <div class="value temp" id="valTemp">--</div>
-      <div class="unit">°C</div>
+      <div class="card-title">Sıcaklık</div>
+      <div id="tempVal" class="card-value val-temp">0.0</div>
+      <div class="card-unit">°C</div>
     </div>
 
-    <!-- Basınç -->
     <div class="card">
-      <div class="title">Barometre</div>
-      <div class="value pressure" id="valPress">--</div>
-      <div class="unit">hPa</div>
+      <div class="card-title">Barometre</div>
+      <div id="pressVal" class="card-value val-press">0</div>
+      <div class="card-unit">hPa</div>
     </div>
   </div>
 
@@ -139,30 +142,35 @@
   </div>
 
   <script>
-    // ThingSpeak Channel ID (RuzgArda Tekne)
-    const CHANNEL_ID = '3521886'; 
-    const URL = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds/last.json`;
+    const channelId = '3521886';
+    const readApiKey = '3X9QT5GTRJTRBYBW';
+    const url = `https://api.thingspeak.com/channels/${channelId}/feeds/last.json?api_key=${readApiKey}`;
 
-    async function fetchMarineData() {
-      try {
-        const response = await fetch(URL);
-        const data = await response.json();
+    function verileriCek() {
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.created_at) {
+            document.getElementById('windVal').innerText = data.field1 ? parseFloat(data.field1).toFixed(1) : '0.0';
+            document.getElementById('voltVal').innerText = data.field2 ? parseFloat(data.field2).toFixed(2) : '0.00';
+            document.getElementById('tempVal').innerText = data.field3 ? parseFloat(data.field3).toFixed(1) : '0.0';
+            document.getElementById('pressVal').innerText = data.field4 ? Math.round(parseFloat(data.field4)) : '0';
 
-        document.getElementById('valWind').innerText = parseFloat(data.field1 || 0).toFixed(1);
-        document.getElementById('valVolt').innerText = parseFloat(data.field2 || 0).toFixed(2);
-        document.getElementById('valTemp').innerText = parseFloat(data.field3 || 0).toFixed(1);
-        document.getElementById('valPress').innerText = Math.round(parseFloat(data.field4 || 0));
-
-        const updateTime = new Date(data.created_at).toLocaleTimeString('tr-TR');
-        document.getElementById('lastUpdate').innerText = `Canlı Veri • Son Güncelleme: ${updateTime}`;
-      } catch (err) {
-        document.getElementById('lastUpdate').innerText = 'Veri Bağlantı Hatası!';
-      }
+            const tarih = new Date(data.created_at);
+            const saatStr = tarih.toLocaleTimeString('tr-TR');
+            document.getElementById('status').innerText = `Canlı Veri • Son Güncelleme: ${saatStr}`;
+          } else {
+            document.getElementById('status').innerText = 'Henüz Veri Yok';
+          }
+        })
+        .catch(error => {
+          console.error('Veri çekme hatası:', error);
+          document.getElementById('status').innerText = 'Bağlantı Hatası';
+        });
     }
 
-    // İlk açılışta ve her 15 saniyede bir verileri güncelle
-    fetchMarineData();
-    setInterval(fetchMarineData, 15000);
+    verileriCek();
+    setInterval(verileriCek, 15000);
   </script>
 </body>
 </html>
