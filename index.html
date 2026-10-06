@@ -156,26 +156,20 @@
     .dir-e { right: 15px; top: 50%; transform: translateY(-50%); }
     .dir-w { left: 15px; top: 50%; transform: translateY(-50%); }
 
-    /* Tekne İkonu (Rotaya göre dönebilir) */
-    .boat-icon { 
-      width: 45px; 
-      height: 85px; 
-      background: linear-gradient(135deg, #1e3a8a, #0284c7); 
-      border: 2px solid var(--accent); 
-      border-radius: 20px 20px 10px 10px; 
-      position: relative; 
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      transition: transform 0.5s ease;
+    /* Cihazdakiyle Birebir Aynı SVG Vektör Tekne İkonu */
+    .boat-icon-container {
+      position: absolute;
+      width: 60px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.5s ease-out;
     }
-    .boat-icon::after { 
-      content: ''; 
-      width: 15px; 
-      height: 35px; 
-      border: 1px solid rgba(255,255,255,0.4); 
-      border-radius: 10px; 
+    .boat-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
     }
 
     /* Rota Göstergesi */
@@ -244,7 +238,7 @@
         </div>
       </div>
 
-      <!-- Orta Sütun: Pusula ve Glass Cockpit -->
+      <!-- Orta Sütun: Pusula ve Vektör Tekne -->
       <div class="compass-panel">
         <div class="compass-container">
           <div class="compass-ring"></div>
@@ -253,7 +247,20 @@
           <div class="direction-label dir-s">S</div>
           <div class="direction-label dir-w">W</div>
           
-          <div class="boat-icon" id="boatIcon"></div>
+          <!-- Detaylı SVG Tekne Grafik Vektörü -->
+          <div class="boat-icon-container" id="boatContainer">
+            <svg class="boat-svg" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+              <path d="M30 2 C45 15, 52 40, 48 80 C46 95, 34 98, 30 98 C26 98, 14 95, 12 80 C8 40, 15 15, 30 2 Z" fill="url(#boatGrad)" stroke="#38bdf8" stroke-width="2"/>
+              <line x1="30" y1="20" x2="30" y2="80" stroke="#38bdf8" stroke-width="1.5" opacity="0.6"/>
+              <defs>
+                <linearGradient id="boatGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#0f172a" />
+                  <stop offset="50%" stop-color="#1e3a8a" />
+                  <stop offset="100%" stop-color="#0284c7" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
         </div>
         <div class="heading-display">
           <div class="heading-val" id="headingVal">--°</div>
@@ -303,25 +310,25 @@
         .then(response => response.json())
         .then(data => {
           if (data && data.created_at) {
-            // Field eşleştirmeleri (ThingSpeak Kanalı)
             const windSpeed = data.field1 ? parseFloat(data.field1).toFixed(1) : '0.0';
             const volt = data.field2 ? parseFloat(data.field2).toFixed(2) : '0.00';
             const temp = data.field3 ? parseFloat(data.field3).toFixed(1) : '0.0';
             const press = data.field4 ? Math.round(parseFloat(data.field4)) : '0';
             
             document.getElementById('windVal').innerText = windSpeed;
-            document.getElementById('windAvgVal').innerText = windSpeed; // Varsa ortalama field'ı ile değiştirilebilir
+            document.getElementById('windAvgVal').innerText = windSpeed;
             document.getElementById('voltVal').innerText = volt;
             document.getElementById('tempVal').innerText = temp;
             document.getElementById('pressVal').innerText = press;
 
-            // Eğer ThingSpeak üzerinde rota (heading) verisi field5'te tutuluyorsa:
+            // Rota (Heading) verisi field5'ten alınıp SVG teknenin dönmesi sağlanıyor
             if (data.field5) {
               const heading = parseFloat(data.field5);
               document.getElementById('headingVal').innerText = heading.toFixed(0) + '°';
-              document.getElementById('boatIcon').style.transform = `rotate(${heading}deg)`;
+              document.getElementById('boatContainer').style.transform = `rotate(${heading}deg)`;
             } else {
-              document.getElementById('headingVal').innerText = '245°'; // Varsayılan/Örnek
+              document.getElementById('headingVal').innerText = '0°';
+              document.getElementById('boatContainer').style.transform = `rotate(0deg)`;
             }
 
             const tarih = new Date(data.created_at);
@@ -331,14 +338,3 @@
             document.getElementById('status').innerText = 'Henüz Veri Yok';
           }
         })
-        .catch(error => {
-          console.error('Veri çekme hatası:', error);
-          document.getElementById('status').innerText = 'Bağlantı Hatası';
-        });
-    }
-
-    verileriCek();
-    setInterval(verileriCek, 15000);
-  </script>
-</body>
-</html>
